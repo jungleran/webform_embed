@@ -4,7 +4,6 @@ namespace Drupal\webform_embed\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use GuzzleHttp\Exception\RequestException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -19,17 +18,14 @@ class WebformEmbedController extends ControllerBase {
 
   protected $response;
 
-  protected $loggerDblog;
-
   /**
    * WebformEmbedController constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_dblog
    */
-  public function __construct(EntityTypeManagerInterface $entity_manager, LoggerChannelFactoryInterface $logger_dblog) {
+  public function __construct(EntityTypeManagerInterface $entity_manager) {
     $this->entityManager = $entity_manager;
-    $this->loggerDblog = $logger_dblog;
   }
 
   /**
@@ -38,7 +34,6 @@ class WebformEmbedController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity.manager'),
-      $container->get('logger.factory')
     );
   }
 
@@ -82,7 +77,8 @@ class WebformEmbedController extends ControllerBase {
       return $form;
     }
     catch (RequestException $e) {
-      $this->loggerDblog->error('Webform failed to load ::' . $e->getMessage());
+      $message = 'Webform failed to load ::' . $e->getMessage();
+      \Drupal::logger('webform_embed')->error($message);
     }
     return NULL;
   }
